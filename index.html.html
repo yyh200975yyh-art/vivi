@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VIKA</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#3a2a5e;font-family:system-ui,sans-serif}
+  canvas{display:block}
+  #ui{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;text-align:center;pointer-events:none;z-index:10;text-shadow:0 2px 20px rgba(0,0,0,.6)}
+  #ui h1{font-size:18px;font-weight:900;letter-spacing:4px;opacity:.95}
+  #ui p{font-size:10px;opacity:.65;margin-top:4px;letter-spacing:2px}
+  #startBtn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:18px 44px;font-size:17px;border:none;border-radius:60px;background:linear-gradient(135deg,#e94560,#ff6b9d,#8a2be2);color:#fff;cursor:pointer;z-index:20;box-shadow:0 0 80px rgba(233,69,96,.5);font-weight:900;letter-spacing:2px;transition:transform .2s}
+  #startBtn:active{transform:translate(-50%,-50%) scale(.94)}
+  #subtitle{position:fixed;top:10%;left:50%;transform:translateX(-50%);color:#fff;font-size:17px;font-weight:900;text-align:center;z-index:15;pointer-events:none;text-shadow:0 2px 20px rgba(0,0,0,.7);opacity:0;transition:opacity .3s;max-width:85%;letter-spacing:1px}
+</style>
+</head>
+<body>
+<button id="startBtn">VIKA 🎂</button>
+<div id="subtitle"></div>
+<div id="ui">
+  <h1>HAPPY BIRTHDAY VIKA</h1>
+  <p>С ДНЁМ РОЖДЕНИЯ 💕 МОГНУ ТЕБЯ</p>
+</div>
+<audio id="bgm" loop><source src="song.mp3.mp3" type="audio/mpeg"></audio>
+<video id="vikaVideo" style="display:none" playsinline muted loop>
+  <source src="video.mp4.mp4" type="video/mp4">
+</video>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x4a3a6e);
+scene.fog=new THREE.FogExp2(0x4a3a6e,0.014);
+
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,120);
+camera.position.set(0,3.5,11);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.5;
+document.body.appendChild(renderer.domElement);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(0,2.5,0);
+controls.enableDamping=true;
+controls.dampingFactor=0.05;
+controls.maxPolarAngle=Math.PI/2.1;
+controls.minDistance=4;
+controls.maxDistance=18;
+
+scene.add(new THREE.AmbientLight(0xaa9acc,3.2));
+const l1=new THREE.PointLight(0xffe8c0,5,50);l1.position.set(5,10,5);l1.castShadow=true;l1.shadow.mapSize.set(1024,1024);scene.add(l1);
+const l2=new THREE.PointLight(0xb07be2,4.2,45);l2.position.set(-7,5,-4);scene.add(l2);
+const l3=new THREE.PointLight(0xff8fc4,3.5,42);l3.position.set(7,3.5,-6);scene.add(l3);
+const l4=new THREE.PointLight(0x88ffe0,2.8,36);l4.position.set(-4,2,7);scene.add(l4);
+const l5=new THREE.PointLight(0xffd166,2.5,32);l5.position.set(3,1,6);scene.add(l5);
+
+const floor=new THREE.Mesh(new THREE.CircleGeometry(20,64),new THREE.MeshStandardMaterial({color:0x6a5a8e,roughness:.4,metalness:.3}));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+
+const glowRing=new THREE.Mesh(new THREE.RingGeometry(2,8,64),new THREE.MeshBasicMaterial({color:0xcc9be2,transparent:true,opacity:0.18,side:THREE.DoubleSide}));
+glowRing.rotation.x=-Math.PI/2;glowRing.position.y=0.01;scene.add(glowRing);
+
+const bgLoader=new THREE.TextureLoader();
+
+let bgGirl=null;
+bgLoader.load('vika3.jpg.JPG',tex=>{
+  tex.colorSpace=THREE.SRGBColorSpace;
+  bgGirl=new THREE.Mesh(new THREE.PlaneGeometry(40,26),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0.6}));
+  bgGirl.position.set(0,10,-22);
+  scene.add(bgGirl);
+});
+
+let brownGirl=null;
+bgLoader.load('vikakavika2.jpg.JPG',tex=>{
+  tex.colorSpace=THREE.SRGBColorSpace;
+  brownGirl=new THREE.Mesh(new THREE.PlaneGeometry(3.5,4.5),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0.9}));
+  brownGirl.position.set(4,2.5,2);
+  brownGirl.rotation.y=-0.4;
+  scene.add(brownGirl);
+});
+
+const photoFiles=['vika1.jpg.JPG','vikakavika2.jpg.JPG','vika4.jpg.PNG','vika5.jpg.JPG'];
+const photoPos=[
+  {x:-8.5,y:3,z:-6.5,ry:Math.PI/6},
+  {x:8.5,y:3,z:-6.5,ry:-Math.PI/6},
+  {x:-9,y:3,z:4.5,ry:Math.PI/4},
+  {x:9,y:3,z:4.5,ry:-Math.PI/4},
+];
+photoPos.forEach((p,i)=>{
+  const f=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,.12),new THREE.MeshStandardMaterial({color:0xeeeeee,metalness:.3,roughness:.4}));
+  f.position.set(p.x,p.y,p.z);f.rotation.y=p.ry;f.castShadow=true;scene.add(f);
+  bgLoader.load(photoFiles[i],tex=>{
+    tex.colorSpace=THREE.SRGBColorSpace;
+    const photo=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.6),new THREE.MeshBasicMaterial({map:tex}));
+    photo.position.set(p.x,p.y,p.z);photo.rotation.y=p.ry;photo.translateZ(.08);scene.add(photo);
+  });
+});
+
+// ===== 蛋糕 =====
+function makeCake(){
+  const g=new THREE.Group();
+  const c1=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,.45,32),new THREE.MeshStandardMaterial({color:0xffc6d1,roughness:.3}));
+  c1.position.y=.22;c1.castShadow=true;g.add(c1);
+  const c2=new THREE.Mesh(new THREE.CylinderGeometry(1,.95,.45,32),new THREE.MeshStandardMaterial({color:0xff79b4,roughness:.3}));
+  c2.position.y=.67;c2.castShadow=true;g.add(c2);
+  const c3=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,.4,32),new THREE.MeshStandardMaterial({color:0xff2493,roughness:.3}));
+  c3.position.y=1.1;c3.castShadow=true;g.add(c3);
+  for(let i=0;i<4;i++){
+    const candle=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.4,8),new THREE.MeshStandardMaterial({color:0xfff8dc}));
+    candle.position.set(Math.cos(i*1.6)*.3,1.5,Math.sin(i*1.6)*.3);g.add(candle);
+    const flame=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8),new THREE.MeshBasicMaterial({color:0xffaa00}));
+    flame.position.set(Math.cos(i*1.6)*.3,1.75,Math.sin(i*1.6)*.3);g.add(flame);
+    const glow=new THREE.PointLight(0xffaa00,0.6,3);
+    glow.position.set(Math.cos(i*1.6)*.3,1.75,Math.sin(i*1.6)*.3);g.add(glow);
+  }
+  return g;
+}
+scene.add(makeCake());
+
+// ===== 抽象大便 =====
+function makePoop(x,z,s){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x9b6a3b,roughness:.8});
+  for(let i=0;i<3;i++){
+    const blob=new THREE.Mesh(new THREE.SphereGeometry(.32-i*.06,16,16),mat);
+    blob.position.y=i*.28;blob.scale.set(1,.7,1);blob.castShadow=true;g.add(blob);
+  }
+  const eyeMat=new THREE.MeshBasicMaterial({color:0xffffff});
+  const eyeL=new THREE.Mesh(new THREE.SphereGeometry(.06,8,8),eyeMat);eyeL.position.set(.1,.75,.22);g.add(eyeL);
+  const eyeR=eyeL.clone();eyeR.position.set(-.1,.75,.22);g.add(eyeR);
+  const pupilMat=new THREE.MeshBasicMaterial({color:0x000000});
+  const pL=new THREE.Mesh(new THREE.SphereGeometry(.03,8,8),pupilMat);pL.position.set(.11,.75,.27);g.add(pL);
+  const pR=pL.clone();pR.position.set(-.09,.75,.27);g.add(pR);
+  const mouth=new THREE.Mesh(new THREE.TorusGeometry(.06,.015,8,16,Math.PI),new THREE.MeshBasicMaterial({color:0x000000}));
+  mouth.position.set(0,.62,.28);mouth.rotation.z=Math.PI;g.add(mouth);
+  g.position.set(x,0,z);g.scale.setScalar(s);
+  return g;
+}
+scene.add(makePoop(-4,-1.5,1));
+scene.add(makePoop(3.4,2.4,.85));
+scene.add(makePoop(-1.2,-4.2,1.1));
+
+// ===== 抽象元素 =====
+function makeWeirdThing(x,z,s,color){
+  const g=new THREE.Group();
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,.9,12),new THREE.MeshStandardMaterial({color,roughness:.5}));
+  shaft.position.y=.45;shaft.castShadow=true;g.add(shaft);
+  const tip=new THREE.Mesh(new THREE.SphereGeometry(.2,16,16),new THREE.MeshStandardMaterial({color,roughness:.4}));
+  tip.position.y=.95;tip.castShadow=true;g.add(tip);
+  const base=new THREE.Mesh(new THREE.SphereGeometry(.22,16,16),new THREE.MeshStandardMaterial({color,roughness:.6}));
+  base.position.y=.1;base.scale.set(1.4,.8,1.4);base.castShadow=true;g.add(base);
+  const eyeMat=new THREE.MeshBasicMaterial({color:0xffffff});
+  const eL=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),eyeMat);eL.position.set(.1,1.05,.15);g.add(eL);
+  const eR=eL.clone();eR.position.set(-.1,1.05,.15);g.add(eR);
+  g.position.set(x,0,z);g.scale.setScalar(s);
+  return g;
+}
+scene.add(makeWeirdThing(-2.6,-2,1,0xff79b4));
+scene.add(makeWeirdThing(3,-1.5,.8,0x9a6be2));
+scene.add(makeWeirdThing(-4.8,3.2,.9,0xffcc33));
+scene.add(makeWeirdThing(4.5,3.8,1.1,0x88ffe0));
+
+// ===== MC 方块树 =====
+function makeBlockTree(x,z){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.BoxGeometry(.45,1.8,.45),new THREE.MeshStandardMaterial({color:0x7b5433,roughness:.8}));
+  trunk.position.y=.9;trunk.castShadow=true;g.add(trunk);
+  const leaves=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.6,1.6),new THREE.MeshStandardMaterial({color:0x4cd054,roughness:.9}));
+  leaves.position.y=2.1;leaves.castShadow=true;g.add(leaves);
+  g.position.set(x,0,z);return g;
+}
+scene.add(makeBlockTree(-7.5,-3));
+scene.add(makeBlockTree(7.5,-3));
+scene.add(makeBlockTree(-6.5,5.5));
+scene.add(makeBlockTree(7,5.5));
+
+// ===== 一只站着的狗 =====
+function makeStandingDog(x,z){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3),new THREE.MeshStandardMaterial({color:0xd1aa7b,roughness:.7}));
+  body.position.y=.85;body.castShadow=true;g.add(body);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.42,.42,.42),new THREE.MeshStandardMaterial({color:0xd1aa7b,roughness:.7}));
+  head.position.y=1.65;head.castShadow=true;g.add(head);
+  const snout=new THREE.Mesh(new THREE.BoxGeometry(.22,.18,.22),new THREE.MeshStandardMaterial({color:0xb88a5a}));
+  snout.position.set(0,1.6,.3);g.add(snout);
+  const earL=new THREE.Mesh(new THREE.ConeGeometry(.1,.22,4),new THREE.MeshStandardMaterial({color:0x9b6a3b}));
+  earL.position.set(-.18,1.9,0);g.add(earL);
+  const earR=earL.clone();earR.position.x=.18;g.add(earR);
+  const eyeMat=new THREE.MeshBasicMaterial({color:0x000000});
+  const eyeL=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),eyeMat);eyeL.position.set(-.1,1.7,.22);g.add(eyeL);
+  const eyeR=eyeL.clone();eyeR.position.x=.1;g.add(eyeR);
+  const armL=new THREE.Mesh(new THREE.BoxGeometry(.14,.7,.14),new THREE.MeshStandardMaterial({color:0xd1aa7b}));
+  armL.position.set(-.32,1,0);armL.castShadow=true;g.add(armL);
+  const armR=armL.clone();armR.position.x=.32;g.add(armR);
+  const legL=new THREE.Mesh(new THREE.BoxGeometry(.16,.5,.16),new THREE.MeshStandardMaterial({color:0xd1aa7b}));
+  legL.position.set(-.14,.25,0);legL.castShadow=true;g.add(legL);
+  const legR=legL.clone();legR.position.x=.14;g.add(legR);
+  const tail=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.5,8),new THREE.MeshStandardMaterial({color:0xd1aa7b}));
+  tail.position.set(0,1,-.2);tail.rotation.x=0.6;g.add(tail);
+  g.position.set(x,0,z);return g;
+}
+scene.add(makeStandingDog(-2,4));
+
+// ===== 一只精致的短发猫猫 =====
+function makeStandingCat(x,z){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,.9,20),new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:.5}));
+  body.position.y=.72;body.castShadow=true;g.add(body);
+  const chest=new THREE.Mesh(new THREE.SphereGeometry(.16,12,12),new THREE.MeshStandardMaterial({color:0xf5f5f5}));
+  chest.position.set(0,.95,.16);g.add(chest);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.3,20,20),new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:.5}));
+  head.position.y=1.45;head.castShadow=true;g.add(head);
+  const earL=new THREE.Mesh(new THREE.ConeGeometry(.1,.22,6),new THREE.MeshStandardMaterial({color:0xaaaaaa}));
+  earL.position.set(-.17,1.72,0);earL.rotation.z=0.2;g.add(earL);
+  const earR=earL.clone();earR.position.x=.17;earR.rotation.z=-0.2;g.add(earR);
+  const innerL=new THREE.Mesh(new THREE.ConeGeometry(.05,.11,6),new THREE.MeshStandardMaterial({color:0xffc6d1}));
+  innerL.position.set(-.17,1.72,.02);innerL.rotation.z=0.2;g.add(innerL);
+  const innerR=innerL.clone();innerR.position.x=.17;innerR.rotation.z=-0.2;g.add(innerR);
+  const eyeL=new THREE.Mesh(new THREE.SphereGeometry(.055,12,12),new THREE.MeshStandardMaterial({color:0x66ccff,roughness:.2}));
+  eyeL.position.set(-.1,1.5,.25);g.add(eyeL);
+  const eyeR=eyeL.clone();eyeR.position.x=.1;g.add(eyeR);
+  const pupilL=new THREE.Mesh(new THREE.SphereGeometry(.025,8,8),new THREE.MeshBasicMaterial({color:0x000000}));
+  pupilL.position.set(-.1,1.5,.29);g.add(pupilL);
+  const pupilR=pupilL.clone();pupilR.position.x=.1;g.add(pupilR);
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(.035,8,8),new THREE.MeshStandardMaterial({color:0xffb6c1}));
+  nose.position.set(0,1.42,.3);g.add(nose);
+  const whiskerMat=new THREE.LineBasicMaterial({color:0xffffff});
+  for(let i=0;i<3;i++){
+    const geoL=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-.08,1.42,.28),new THREE.Vector3(-.35,1.38+i*.03,.3)]);
+    g.add(new THREE.Line(geoL,whiskerMat));
+    const geoR=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(.08,1.42,.28),new THREE.Vector3(.35,1.38+i*.03,.3)]);
+    g.add(new THREE.Line(geoR,whiskerMat));
+  }
+  const armL=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.55,10),new THREE.MeshStandardMaterial({color:0xaaaaaa}));
+  armL.position.set(-.26,.9,0);armL.rotation.z=0.25;g.add(armL);
+  const armR=armL.clone();armR.position.x=.26;armR.rotation.z=-0.25;g.add(armR);
+  const legL=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.4,10),new THREE.MeshStandardMaterial({color:0x9a9a9a}));
+  legL.position.set(-.11,.2,0);g.add(legL);
+  const legR=legL.clone();legR.position.x=.11;g.add(legR);
+  const tailCurve=new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0,.75,-.2),
+    new THREE.Vector3(0,.95,-.45),
+    new THREE.Vector3(.05,1.1,-.6)
+  ]);
+  const tail=new THREE.Mesh(new THREE.TubeGeometry(tailCurve,12,.04,8,false),new THREE.MeshStandardMaterial({color:0xaaaaaa}));
+  g.add(tail);
+  g.position.set(x,0,z);return g;
+}
+scene.add(makeStandingCat(2,4));
+
+// ===== 大屏幕 =====
+const screen=new THREE.Mesh(new THREE.PlaneGeometry(9,5.4),new THREE.MeshBasicMaterial({color:0x1a1a2a}));
+screen.position.set(0,4.5,-8);scene.add(screen);
+const frame=new THREE.Mesh(new THREE.BoxGeometry(9.5,5.8,.25),new THREE.MeshStandardMaterial({color:0x4a4a5a,metalness:.9,roughness:.2}));
+frame.position.set(0,4.5,-8.15);scene.add(frame);
+const screenGlow=new THREE.PointLight(0xb07be2,2.5,18);
+screenGlow.position.set(0,4.5,-7);scene.add(screenGlow);
+
+const bars=[];const barCount=40;
+for(let i=0;i<barCount;i++){
+  const bar=new THREE.Mesh(new THREE.BoxGeometry(.18,.1,.06),new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(i/barCount,.9,.65)}));
+  bar.position.set(-4.2+i*.215,2.8,-7.9);scene.add(bar);bars.push(bar);
+}
+
+// ===== 彩带 =====
+const confCount=500;
+const confGeo=new THREE.BufferGeometry();
+const confPos=new Float32Array(confCount*3);
+const confCol=new Float32Array(confCount*3);
+for(let i=0;i<confCount;i++){
+  confPos[i*3]=(Math.random()-.5)*30;
+  confPos[i*3+1]=Math.random()*24;
+  confPos[i*3+2]=(Math.random()-.5)*30;
+  const c=new THREE.Color().setHSL(Math.random(),.9,.65);
+  confCol[i*3]=c.r;confCol[i*3+1]=c.g;confCol[i*3+2]=c.b;
+}
+confGeo.setAttribute('position',new THREE.BufferAttribute(confPos,3));
+confGeo.setAttribute('color',new THREE.BufferAttribute(confCol,3));
+const confMat=new THREE.PointsMaterial({size:.12,vertexColors:true,transparent:true,opacity:.85,blending:THREE.AdditiveBlending});
+const confetti=new THREE.Points(confGeo,confMat);scene.add(confetti);
+
+let videoStarted=false;
+const videoEl=document.getElementById('vikaVideo');
+const videoTexture=new THREE.VideoTexture(videoEl);
+
+function startVideo(){
+  if(videoStarted) return;
+  videoStarted=true;
+  videoEl.style.display='block';
+  videoEl.play().catch(()=>{});
+  screen.material=new THREE.MeshBasicMaterial({map:videoTexture});
+  const bgm=document.getElementById('bgm');
+  bgm.volume=.5;
+  bgm.play().catch(()=>{});
+}
+
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+
+  if(bgGirl){
+    bgGirl.rotation.z=Math.sin(t*0.8)*0.03;
+    bgGirl.position.y=10+Math.sin(t*0.7)*0.3;
+  }
+  if(brownGirl){
+    brownGirl.position.y=2.5+Math.sin(t*1.2)*0.15;
+    brownGirl.rotation.y=-0.4+Math.sin(t*0.8)*0.05;
+  }
+
+  bars.forEach((bar,i)=>{
+    const h=.1+Math.abs(Math.sin(t*4+i*.4))*.9;
+    bar.scale.y=h*10;
+    bar.position.y=2.8+(h*10)/2-.5;
+  });
+
+  const pos=confetti.geometry.attributes.position.array;
+  for(let i=0;i<confCount;i++){
+    pos[i*3+1]-=.016+(i%5)*.004;
+    if(pos[i*3+1]<-1)pos[i*3+1]=22+Math.random()*4;
+  }
+  confetti.geometry.attributes.position.needsUpdate=true;
+
+  if(videoStarted) videoTexture.needsUpdate=true;
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  document.getElementById('startBtn').style.display='none';
+  startVideo();
+});
+</script>
+</body>
+</html>
